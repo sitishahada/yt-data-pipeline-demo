@@ -28,7 +28,7 @@ print("Step 3: Transforming data took: ", str(t1-t0), " seconds", "\n")
 
 #Step 4: Generate text embeddings
 t0 = time.time()
-createEmbeddings()
+createTextEmbeddings()
 t1 = time.time()
 print("Step 4: Done")
 print("Step 4: Generating embeddings took: ", str(t1-t0), " seconds", "\n")

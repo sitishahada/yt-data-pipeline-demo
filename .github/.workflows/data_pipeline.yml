@@ -1,0 +1,47 @@
+name: data-pipeline-workflow
+
+on: 
+# Trigger the workflow on push or pull request,
+  push: 
+# Manually trigger the workflow using the GitHub Actions UI
+  workflow_dispatch:
+# Schedule the workflow to run at a specific time | run at every night 12:25  AM
+  schedule:
+    - cron: '35 0 * * *'
+
+jobs:
+# Job name
+  run-data-pipeline:
+# Job runs on ubuntu-latest
+    runs-on: ubuntu-latest
+# Steps to run in the job
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN}}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run the data pipeline
+        env: 
+          YT_API_KEY: ${{ secrets.YT_API_KEY }} # Import API key
+        run: python data_pipeline.py 
+      - name: Check for changes
+        id: git-check 
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add .
+          git diff --staged --quiet || echo "changes=true" >> $GITHUB_ENV 
+      - name: Commit and push if changes
+        if: env.changes == 'true' # if changes made push new data to repo
+        run: |
+          git commit -m "Updated video index"
+          git push
